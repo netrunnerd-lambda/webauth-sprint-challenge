@@ -7,8 +7,6 @@ router.post('/register', async (req, res) => {
   const { username, password } = user;
   const length = Object.keys(user).length;
 
-  console.log(user);
-
   try {
     if (!length) {
       res.status(400).json({
@@ -22,16 +20,9 @@ router.post('/register', async (req, res) => {
       });
     } else {
       user.password = await bcrypt.hash(password, 10);
-      
-      console.log('post-hash', user);
-
       user = await users.new(user);
 
       if (user) {
-        const newUser = await users.findByUsername(username);
-
-        console.log('newUser', newUser);
-
         res.status(201).json({
           message: "Head on in. You have registered successfully.",
           success: true
