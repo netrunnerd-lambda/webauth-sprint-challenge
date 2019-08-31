@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const { generateToken } = require('../middleware');
 const router = require('express').Router();
 const users = require('./users');
 
@@ -38,8 +39,41 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.post('/login', (req, res) => {
-  // implement login
+router.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const user = await users.findByUsername(username);
+
+    if (user && bcrypt.compareSync(password, user.password)) {
+      const { id } = user;
+
+      const load = {
+        id,
+        loggedIn: true,
+        username
+      };
+      
+      const token = generateToken(load);
+      
+      res.json({
+        message: `Welcome, ${username}.`,
+        success: true,
+        token
+      });
+    } else {
+      res.status(401).json({
+        message: "No dice, son.",
+        success: false
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      error,
+      message: "No information.",
+      success: false
+    });
+  }
 });
 
 module.exports = router;
